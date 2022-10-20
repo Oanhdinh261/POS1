@@ -1,0 +1,193 @@
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema Point_of_Sale
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema Point_of_Sale
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `Point_of_Sale` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+USE `Point_of_Sale` ;
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Supplier`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Supplier` (
+  `SupplierID` INT NOT NULL,
+  `SupplierName` VARCHAR(45) NOT NULL,
+  `SupplierLocation` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`SupplierID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Vendor`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Vendor` (
+  `VendorID` INT NOT NULL,
+  `VendorName` VARCHAR(45) NOT NULL,
+  `VendorLocation` VARCHAR(45) NOT NULL,
+  `OrderStatus` TINYINT NOT NULL,
+  PRIMARY KEY (`VendorID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Customer`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Customer` (
+  `CustomerID` INT NOT NULL,
+  `CustName` VARCHAR(45) NOT NULL,
+  `CustEmail` VARCHAR(79) NULL DEFAULT NULL,
+  `CustDOB` DATETIME NOT NULL,
+  `EmployeeID` INT NOT NULL,
+  PRIMARY KEY (`CustomerID`),
+  UNIQUE INDEX `EmployeeID_UNIQUE` (`EmployeeID` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Supervisor`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Supervisor` (
+  `SupervisorID` INT NOT NULL,
+  `SupervisorName` VARCHAR(45) NOT NULL,
+  `SupervisorRayRate` VARCHAR(45) NOT NULL,
+  `SupervisorWeeklyHours` DECIMAL(4,1) NOT NULL,
+  PRIMARY KEY (`SupervisorID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Employee`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Employee` (
+  `EmployeeID` INT NOT NULL,
+  `EmpName` VARCHAR(45) NOT NULL,
+  `EmpPayRate` VARCHAR(45) NOT NULL,
+  `EmpWeeklyHours` DECIMAL(3,1) NOT NULL,
+  `EmpStartDate` DATETIME NOT NULL,
+  `EmpEndDate` DATETIME NULL DEFAULT NULL,
+  `EmpActiveStatus` TINYINT NULL DEFAULT NULL,
+  `EmpEmail` VARCHAR(79) NULL DEFAULT NULL,
+  `EmpNum` VARCHAR(9) NOT NULL,
+  `EmpDOB` DATETIME NOT NULL,
+  `Supervisor_SupervisorID` INT NOT NULL,
+  PRIMARY KEY (`EmployeeID`),
+  UNIQUE INDEX `EmpNum_UNIQUE` (`EmpNum` ASC) VISIBLE,
+  INDEX `fk_Employee_Supervisor1_idx` (`Supervisor_SupervisorID` ASC) VISIBLE,
+  CONSTRAINT `fk_Employee_Supervisor1`
+    FOREIGN KEY (`Supervisor_SupervisorID`)
+    REFERENCES `Point_of_Sale`.`Supervisor` (`SupervisorID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Transaction`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Transaction` (
+  `TransactionID` INT NOT NULL,
+  `CustomerID` INT NOT NULL,
+  `ProductID` INT NOT NULL,
+  `TransPrice` DECIMAL(10,2) NOT NULL,
+  `EmployeeID` INT NOT NULL,
+  `EmpName` VARCHAR(45) NOT NULL,
+  `CustName` VARCHAR(45) NOT NULL,
+  `Time` DATETIME NOT NULL,
+  `Employee_EmployeeID` INT NOT NULL,
+  `Customer_CustomerID` INT NOT NULL,
+  PRIMARY KEY (`TransactionID`),
+  UNIQUE INDEX `CustomerID_UNIQUE` (`CustomerID` ASC) VISIBLE,
+  UNIQUE INDEX `ProductID_UNIQUE` (`ProductID` ASC) VISIBLE,
+  UNIQUE INDEX `EmployeeID_UNIQUE` (`EmployeeID` ASC) VISIBLE,
+  INDEX `fk_Transaction_Employee_idx` (`Employee_EmployeeID` ASC) VISIBLE,
+  INDEX `fk_Transaction_Customer1_idx` (`Customer_CustomerID` ASC) VISIBLE,
+  CONSTRAINT `fk_Transaction_Customer1`
+    FOREIGN KEY (`Customer_CustomerID`)
+    REFERENCES `Point_of_Sale`.`Customer` (`CustomerID`),
+  CONSTRAINT `fk_Transaction_Employee`
+    FOREIGN KEY (`Employee_EmployeeID`)
+    REFERENCES `Point_of_Sale`.`Employee` (`EmployeeID`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Product`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Product` (
+  `ProductID` INT NOT NULL,
+  `ProPrice` DECIMAL(10,2) NOT NULL,
+  `ProName` VARCHAR(45) NOT NULL,
+  `ProVendor` VARCHAR(45) NOT NULL,
+  `ProCategory` VARCHAR(45) NOT NULL,
+  `ProAmount` INT NOT NULL,
+  `ProInStock` TINYINT NOT NULL,
+  `ProDesciption` VARCHAR(1000) NULL DEFAULT NULL,
+  `EmployeeID` INT NOT NULL,
+  `Supplier_SupplierID` INT NOT NULL,
+  `Vendor_VendorID` INT NOT NULL,
+  `Transaction_TransactionID` INT NOT NULL,
+  PRIMARY KEY (`ProductID`),
+  UNIQUE INDEX `EmployeeID_UNIQUE` (`EmployeeID` ASC) VISIBLE,
+  INDEX `fk_Product_Supplier1_idx` (`Supplier_SupplierID` ASC) VISIBLE,
+  INDEX `fk_Product_Vendor1_idx` (`Vendor_VendorID` ASC) VISIBLE,
+  INDEX `fk_Product_Transaction1_idx` (`Transaction_TransactionID` ASC) VISIBLE,
+  CONSTRAINT `fk_Product_Supplier1`
+    FOREIGN KEY (`Supplier_SupplierID`)
+    REFERENCES `Point_of_Sale`.`Supplier` (`SupplierID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Product_Vendor1`
+    FOREIGN KEY (`Vendor_VendorID`)
+    REFERENCES `Point_of_Sale`.`Vendor` (`VendorID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Product_Transaction1`
+    FOREIGN KEY (`Transaction_TransactionID`)
+    REFERENCES `Point_of_Sale`.`Transaction` (`TransactionID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `Point_of_Sale`.`Category`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Point_of_Sale`.`Category` (
+  `CategoryID` INT NOT NULL,
+  `ProCategory` VARCHAR(45) NOT NULL,
+  `Product_ProductID` INT NOT NULL,
+  INDEX `fk_Category_Product1_idx` (`Product_ProductID` ASC) VISIBLE,
+  CONSTRAINT `fk_Category_Product1`
+    FOREIGN KEY (`Product_ProductID`)
+    REFERENCES `Point_of_Sale`.`Product` (`ProductID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
